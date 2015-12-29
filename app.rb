@@ -90,13 +90,13 @@ class Pathfinder
         added_distance: 1
       },
       {
-        condition: Proc.new { lhs % 1 != 0 },
+        condition: Proc.new { lhs % 1 != 0 && (lhs + 0.5).to_i == lhs.to_i },
         operation: Proc.new { lhs.to_i },
         description: "#{lhs} rounded down",
         added_distance: 1
       },
       {
-        condition: Proc.new { lhs % 1 != 0 && (lhs + 0.5).to_i != lhs },
+        condition: Proc.new { lhs % 1 != 0 && (lhs + 0.5).to_i != lhs.to_i },
         operation: Proc.new { (lhs + 0.5).to_i },
         description: "#{lhs} rounded up",
         added_distance: 1
