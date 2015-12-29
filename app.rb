@@ -76,6 +76,11 @@ class Pathfinder
         description: "#{lhs} / #{rhs}#{suffix.end_with?('percentage') ? '%' : ''} #{suffix}"
       },
       {
+        condition: Proc.new { !rhs.zero? },
+        operation: Proc.new { lhs.to_f % rhs.to_f },
+        description: "#{lhs} mod #{rhs}#{suffix.end_with?('percentage') ? '%' : ''} #{suffix}"
+      },
+      {
         operation: Proc.new { lhs + rhs },
         description: "#{lhs} + #{rhs}#{suffix.end_with?('percentage') ? '%' : ''} #{suffix}"
       },
