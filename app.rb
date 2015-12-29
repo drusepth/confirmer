@@ -86,17 +86,20 @@ class Pathfinder
       {
         condition: Proc.new { Integer(lhs) == lhs },
         operation: Proc.new { lhs.to_s.reverse.to_i },
-        description: "#{lhs} reversed"
+        description: "#{lhs} reversed",
+        added_distance: 1
       },
       {
         condition: Proc.new { lhs % 1 != 0 },
         operation: Proc.new { lhs.to_i },
-        description: "#{lhs} rounded down"
+        description: "#{lhs} rounded down",
+        added_distance: 1
       },
       {
         condition: Proc.new { lhs % 1 != 0 && (lhs + 0.5).to_i != lhs },
         operation: Proc.new { (lhs + 0.5).to_i },
-        description: "#{lhs} rounded up"
+        description: "#{lhs} rounded up",
+        added_distance: 1
       }
     ]
   end
@@ -118,7 +121,7 @@ class Pathfinder
           operation_in: "#{op[:description]} = #{result}",
           metric:       metric,
           parent:       from,
-          distance:     from[:distance] + 1
+          distance:     from[:distance] + 1 + (op.key?(:added_distance) ? op[:added_distance] : 0)
         }
       end
     end
