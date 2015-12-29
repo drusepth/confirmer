@@ -155,7 +155,7 @@ class Dactyl
   def self.sanitize hash
     hash
       .select { |key, value| value.is_a?(Integer) || value.is_a?(Float) }
-      .each   { |key, value| value *= 100 if key.end_with? 'percentage' }
+      .each   { |key, value| key.end_with?('percentage') ? value * 100 : value }
   end
 end
 
