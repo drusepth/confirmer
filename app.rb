@@ -68,19 +68,35 @@ class Pathfinder
     [
       {
         operation: Proc.new { lhs * rhs },
-        description: "#{lhs} * #{rhs}#{suffix.end_with?('percentage') ? '%' : ''} #{suffix} = #{lhs * rhs}"
+        description: "#{lhs} * #{rhs}#{suffix.end_with?('percentage') ? '%' : ''} #{suffix}"
       },
       {
-        operation: rhs.zero? ? Proc.new { 0 } : Proc.new { lhs.to_f / rhs.to_f },
-        description: "#{lhs} / #{rhs}#{suffix.end_with?('percentage') ? '%' : ''} #{suffix} = #{rhs.zero? ? 0 : lhs.to_f / rhs.to_f}"
+        condition: Proc.new { !rhs.zero? },
+        operation: Proc.new { lhs.to_f / rhs.to_f },
+        description: "#{lhs} / #{rhs}#{suffix.end_with?('percentage') ? '%' : ''} #{suffix}"
       },
       {
         operation: Proc.new { lhs + rhs },
-        description: "#{lhs} + #{rhs}#{suffix.end_with?('percentage') ? '%' : ''} #{suffix} = #{lhs + rhs}"
+        description: "#{lhs} + #{rhs}#{suffix.end_with?('percentage') ? '%' : ''} #{suffix}"
       },
       {
         operation: Proc.new { lhs - rhs },
-        description: "#{lhs} - #{rhs}#{suffix.end_with?('percentage') ? '%' : ''} #{suffix} = #{lhs - rhs}"
+        description: "#{lhs} - #{rhs}#{suffix.end_with?('percentage') ? '%' : ''} #{suffix}"
+      },
+      {
+        condition: Proc.new { Integer(lhs) == lhs },
+        operation: Proc.new { lhs.to_s.reverse.to_i },
+        description: "#{lhs} reversed"
+      },
+      {
+        condition: Proc.new { lhs % 1 != 0 },
+        operation: Proc.new { lhs.to_i },
+        description: "#{lhs} rounded down"
+      },
+      {
+        condition: Proc.new { lhs % 1 != 0 && (lhs + 0.5).to_i != lhs },
+        operation: Proc.new { (lhs + 0.5).to_i },
+        description: "#{lhs} rounded up"
       }
     ]
   end
@@ -93,11 +109,13 @@ class Pathfinder
       next unless metric_value.is_a?(Integer) || metric_value.is_a?(Float)
 
       valid_operations(lhs: from[:value], rhs: metric_value, suffix: metric).each do |op|
+        next if op.key?(:condition) && !op[:condition].call
+
         result = op[:operation].call
         result = Integer(result) if result == Integer(result)
         neighbors << {
           value:        result,
-          operation_in: op[:description],
+          operation_in: "#{op[:description]} = #{result}",
           metric:       metric,
           parent:       from,
           distance:     from[:distance] + 1
@@ -139,23 +157,23 @@ class Dactyl
 end
 
 get '/' do
-	erb :"apidocs"
+    erb :"apidocs"
 end
 
 get '/proof' do
-	content_type :json
-	question = params[:question]
+    content_type :json
+    question = params[:question]
 
-	data = Dactyl.analyze(question)
-	pf = Pathfinder.new data: data
-	steps = pf.search goal: 3, method: :bfs
+    data = Dactyl.analyze(question)
+    pf = Pathfinder.new data: data
+    steps = pf.search goal: 3, method: :bfs
 
-	if steps.any?
-		steps.map! { |step| "#{step[:operation_in].gsub('_', ' ')}"}
-		steps << "HL3 confirmed."
-	end
+    if steps.any?
+        steps.map! { |step| "#{step[:operation_in].gsub('_', ' ')}"}
+        steps << "HL3 confirmed."
+    end
 
-	steps.to_json
+    steps.to_json
 end
 
 
