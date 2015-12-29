@@ -142,7 +142,7 @@ class Dactyl
     begin
       data = JSON.parse(response.body)["metrics"]   
       data = sanitize data
-      data   
+      data
     rescue
       { # some default data
         word_count: message.split(' ').length,
@@ -154,8 +154,8 @@ class Dactyl
 
   def self.sanitize hash
     hash
-      .select { |key, value| value.is_a?(Integer) || value.is_a?(Float) }
-      .each   { |key, value| key.end_with?('percentage') ? value * 100 : value }
+      .select!     { |key, value| value.is_a?(Integer) || value.is_a?(Float) }
+      .merge(hash) { |key, value| key.end_with?('_percentage') ? value * 100 : value }
   end
 end
 
