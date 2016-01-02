@@ -49,7 +49,7 @@ class Pathfinder
     !invalid_transition? current, neighbor, queue, goal
   end
 
-  def invalid_transition? current = {value: 0, metric: nil}, neighbor, queue, goal
+  def invalid_transition? current = {value: 0, metric: nil}, neighbor = {value: 0, metric: nil}, queue, goal
     [
       queue.any? { |node| neighbor[:value].to_f == node[:value].to_f },
       queue.any? { |node| neighbor[:metric] == node[:metric] },
@@ -58,11 +58,21 @@ class Pathfinder
       neighbor[:value].zero?,
       neighbor[:value] < 0,
       neighbor[:value] > goal * 15,
-      neighbor[:distance] > 10
+      neighbor[:distance] > 10,
+      has_ancestor_with_metric?(neighbor, neighbor[:metric])
     ].any?
   end
 
   private
+
+  def has_ancestor_with_metric? hash, metric
+    while hash.key?(:parent) && !hash[:parent].nil?
+      hash = hash[:parent]
+      return true if hash[:metric] == metric
+    end
+
+    false
+  end
 
   def valid_operations lhs:, rhs:, suffix:
     [
@@ -183,11 +193,3 @@ get '/proof' do
 
     steps.to_json
 end
-
-
-
-
-
-
-
-
