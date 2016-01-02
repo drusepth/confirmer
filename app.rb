@@ -89,7 +89,7 @@ class Pathfinder
         description: "#{lhs} - #{rhs}#{suffix.end_with?('percentage') ? '%' : ''} #{suffix}"
       },
       {
-        condition: Proc.new { Integer(lhs) == lhs },
+        condition: Proc.new { Integer(lhs) == lhs && lhs % 10 != 0 },
         operation: Proc.new { lhs.to_s.reverse.to_i },
         description: "#{lhs} reversed",
         added_distance: 1
@@ -174,7 +174,7 @@ get '/proof' do
 
     data = Dactyl.analyze(question)
     pf = Pathfinder.new data: data
-    steps = pf.search goal: 3, method: :bfs
+    steps = pf.search goal: 3, method: :dfs
 
     if steps.any?
         steps.map! { |step| "#{step[:operation_in].gsub('_', ' ')}"}
