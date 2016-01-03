@@ -33,5 +33,6 @@ $(document).ready(function () {
 
 		question_field.val(suggestion);
 		ask_function();
+		return false;
 	});
 });
