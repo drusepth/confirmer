@@ -4,7 +4,7 @@ $(document).ready(function () {
 	    question_field = $('#question');
 
 	var ask_function = function () {
-		ask_button.text('Asking...');
+		ask_button.text('Asking...').addClass('disabled');
 		$.get('/proof', {question: question_field.val()}, function (response) {
 			results_table.find('tbody').html('');
 			results_table.find('thead').show();
@@ -20,7 +20,7 @@ $(document).ready(function () {
 				results_table.append(row);
 			}
 			results_table.show();
-			ask_button.text('Ask');
+			ask_button.text('Ask').removeClass('disabled');
 		}, "json");
 	}
 
