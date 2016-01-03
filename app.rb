@@ -18,7 +18,7 @@ class Pathfinder
     data.keys.each do |metric|
       next if data[metric].zero?
       data[metric] = Integer(data[metric]) if data[metric] == Integer(data[metric])
-      queue << {value: data[metric], operation_in: "#{data[metric]} #{metric}", metric: metric, parent: nil, distance: 0}
+      queue << {value: data[metric], operation_in: "#{data[metric]}#{metric.end_with?('percentage') ? '%' : ''} #{metric}", metric: metric, parent: nil, distance: 0}
     end
 
     while queue.any?
@@ -99,22 +99,37 @@ class Pathfinder
         description: "#{lhs} - #{rhs}#{suffix.end_with?('percentage') ? '%' : ''} #{suffix}"
       },
       {
+        condition: Proc.new { Integer(lhs) == lhs && lhs > 1 && rhs > 1 },
+        operation: Proc.new { Integer("#{lhs.to_i}#{rhs.to_i}") },
+        description: "#{lhs} concatenated with #{rhs}#{suffix.end_with?('percentage') ? '%' : ''} #{suffix}"
+      },
+      {
+        condition: Proc.new { Integer(lhs) == lhs && lhs > 1 && rhs > 1 },
+        operation: Proc.new { Integer("#{rhs.to_i}#{lhs.to_i}") },
+        description: "#{rhs}#{suffix.end_with?('percentage') ? '%' : ''} #{suffix} concatenated with #{lhs}"
+      }
+    ]
+  end
+
+  def unary_operators lhs:
+    [
+      {
         condition: Proc.new { Integer(lhs) == lhs && lhs % 10 != 0 },
         operation: Proc.new { lhs.to_s.reverse.to_i },
         description: "#{lhs} reversed",
-        added_distance: 1
+        added_distance: 3
       },
       {
         condition: Proc.new { lhs % 1 != 0 && (lhs + 0.5).to_i == lhs.to_i },
         operation: Proc.new { lhs.to_i },
         description: "#{lhs} rounded down",
-        added_distance: 1
+        added_distance: 3
       },
       {
         condition: Proc.new { lhs % 1 != 0 && (lhs + 0.5).to_i != lhs.to_i },
         operation: Proc.new { (lhs + 0.5).to_i },
         description: "#{lhs} rounded up",
-        added_distance: 1
+        added_distance: 3
       }
     ]
   end
@@ -139,6 +154,20 @@ class Pathfinder
           distance:     from[:distance] + 1 + (op.key?(:added_distance) ? op[:added_distance] : 0)
         }
       end
+    end
+
+    unary_operators(lhs: from[:value]).each do |op|
+      next if op.key?(:condition) && !op[:condition].call
+
+      result = op[:operation].call
+      result = Integer(result) if result == Integer(result)
+      neighbors << {
+        value:        result,
+        operation_in: "#{op[:description]} = #{result}",
+        metric:       'unary operation',
+        parent:       from,
+        distance:     from[:distance] + 1 + (op.key?(:added_distance) ? op[:added_distance] : 0)
+      }
     end
 
     neighbors
