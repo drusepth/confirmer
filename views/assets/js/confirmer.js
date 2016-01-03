@@ -27,4 +27,11 @@ $(document).ready(function () {
 	// Trigger bindings
 	ask_button.click(function () { ask_function(); return false; });
 	question_field.keyup(function (e) { if (e.keyCode == 13) { ask_function(); } });
+
+	$('.suggestion').click(function () {
+		var suggestion = $(this).text();
+
+		question_field.val(suggestion);
+		ask_function();
+	});
 });
