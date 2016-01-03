@@ -184,7 +184,7 @@ get '/proof' do
 
     data = Dactyl.analyze(question)
     pf = Pathfinder.new data: data
-    steps = pf.search goal: 3, method: :dfs
+    steps = pf.search goal: 3, method: :bfs
 
     if steps.any?
         steps.map! { |step| "#{step[:operation_in].gsub('_', ' ')}"}
